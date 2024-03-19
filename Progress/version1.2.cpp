@@ -50,8 +50,8 @@ const int numberOfSensors = 8;
 int lineSensor[numberOfSensors] = {A5,A4,A7,A3,A2,A6,A1,A0} ; // Linesensor pins
 int lineValues[numberOfSensors];
 int maxSensorValue = 0;
-const int MAX_BLACK = 900;
-const int MIN_BLACK = 980;
+const int MAX_BLACK = 980;
+const int MIN_BLACK = 900;
 const int MAX_GRAY = 700;
 const int MIN_GRAY = 600;
 const int MIN_WHITE = 500;
@@ -170,27 +170,27 @@ void defaultLineSensor() {
  // Use thresholds to determine the behavior based on the maximum sensor value
   if (maxSensorValue >= MAX_BLACK) {
 
-    if (lineValues[3] >= MAX_BLACK || lineValues[4] >= MAX_BLACK ){
+    if (lineValues[3] >= MIN_BLACK || lineValues[4] >= MIN_BLACK ){
       driveForward(105 + speedOneWay, 123 + speedOneWay);
       Serial.print("forward");
       Serial.print(" ");
     }
-    else if ( lineValues[2] >= MIN_BLACK){
+    else if ( lineValues[2] >= MAX_BLACK){
       driveRight(105 + speedTurns,123 + speedTurns);
       Serial.print("right1111");
       Serial.print(" ");
     }
-    else if (lineValues[5] >= MIN_BLACK){
+    else if (lineValues[5] >= MAX_BLACK){
       driveLeft(105 + speedTurns,123 + speedTurns);
       Serial.print("left111");
       Serial.print(" ");
     }
-    else if (lineValues[1] >= MAX_BLACK){
+    else if (lineValues[1] >= MIN_BLACK){
       driveRight(105 + speedSharpT,123 + speedSharpT);
       Serial.print("right222");
       Serial.print(" ");
     }
-    else if (lineValues[6] >= MAX_BLACK){
+    else if (lineValues[6] >= MIN_BLACK){
       driveLeft(105 + speedSharpT,123 + speedSharpT);
       Serial.print("left222");
       Serial.print(" ");
