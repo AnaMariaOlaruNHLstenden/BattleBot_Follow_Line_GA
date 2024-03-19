@@ -1,9 +1,13 @@
-//.............................LIBRARIES..................................
+//=======================================================================//
+//.............................LIBRARIES.................................//
+//=======================================================================//
 
 #include <Arduino.h> // Arduino library needed for Visual Studio(PlatformIO)
 #include <Adafruit_NeoPixel.h> // Neopixel Library to control the neopixels
 
-//....................PREDECLARATION OF FUNCTIONS.........................
+//=======================================================================//
+//.....................PREDECLARATION OF FUNCTIONS.......................//
+//=======================================================================//
 
 void setPixelColor(int pixel, uint8_t red, uint8_t green, uint8_t blue);
 void testLights();
@@ -17,37 +21,57 @@ void defaultLineSensor();
 void distanceSensor();
 void gripToggle();
 void servo(int pulse);
-
-//.............................I/O PINS...................................
-
+//=======================================================================//
+//................................I/O PINS...............................//
+//=======================================================================//
 #define PIN 8 // Neopixel pin NI(Input)
 #define NUMPIXELS 4 // There are 4 neopixels on the board
 
 const int echoPin = 4; // Echo sensor echo pin
 const int triggerPin = 5; // Echo sensor trigger pin
-const int maxDistance = 20; // 20 cm maximum distance to leave room for error
-float distance, duration; // declared 2 floats in 1 line for organization purposes
-const int echoInterval = 245;
+
 
 const int gripperPin = 12; // Gripper pin GR
-int gripOpen = 1600; // pulse length servo open
-int gripClosed = 930; // pulse length servo closed
-int servoInterval = 20; // time between pulse
-int gripperToggle = 1000; // toggle gripper every second
+
 
 const int LB = 11; // Motor Left Backwards pin A1 LEFT WOBBLY
 const int LF = 10; // Motor Left Forwards pin A2
 const int RB = 9; // Motor Right Backwards pin B1 RIGHT WEAK
 const int RF = 6; // Motor Right Forwards pin B2
-const int speedTurns = 40; // Adding speed for turns
-const int speedSharpT = 60; // Adding speed for sharp turns
-const int speedOneWay= 50; // Adding speed for one direction not turns
 
 const int motorPulseLeft = 2; // Motor pin R1
 const int motorPulseRight = 3; // Motor pin R2 
 
 const int numberOfSensors = 8;
 int lineSensor[numberOfSensors] = {A5,A4,A7,A3,A2,A6,A1,A0} ; // Linesensor pins
+/*=============================================
+A0 = D8      A2 = D5      A4 = D2      A7 = D3 
+A1 = D7      A3 = D4      A5 = D1      A6 = D6
+===============================================*/
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, PIN, NEO_GRB + NEO_KHZ800); // Neopixel needed code from library
+
+//=======================================================================//
+//...............................VARIABLES...............................//
+//=======================================================================//
+
+//-------ULTRASONIC-------//
+const int maxDistance = 20; // 20 cm maximum distance to leave room for error
+float distance, duration; // declared 2 floats in 1 line for organization purposes
+const int echoInterval = 245;
+
+//--------GRIPPER-------//
+int gripOpen =2000; // pulse length servo open
+int gripClosed = 1160; // pulse length servo closed
+int servoInterval = 20; // time between pulse
+int gripperToggle = 1000; // toggle gripper every second
+
+//--------MOVEMENT-------//
+const int speedTurns = 55; // Adding speed for turns
+const int speedSharpT = 60; // Adding speed for sharp turns
+const int speedOneWay= 50; // Adding speed for one direction not turns
+
+//--------SENSOR---------//
 int lineValues[numberOfSensors];
 int maxSensorValue = 0;
 const int MAX_BLACK = 980;
@@ -56,29 +80,32 @@ const int MAX_GRAY = 700;
 const int MIN_GRAY = 600;
 const int MIN_WHITE = 500;
 const int MAX_WHITE = 400;
-/*
-A0 = D8      A2 = D3      A4 = D2      A7 = D6 
-A1 = D6      A3 = D4      A5 = D1      A6 = D5
-*/
 
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, PIN, NEO_GRB + NEO_KHZ800); // Neopixel needed code from library
-
-//................................SETUP....................................
+//=======================================================================//
+//.................................SETUP.................................//
+//=======================================================================//
 
 void setup() {
   strip.begin(); // Initialize neopixels
   strip.show(); // Set neopixel on off
   Serial.begin(9645); // Start serial monitoring on 9645
+
   // Setup the pinModes
   pinMode(LF, OUTPUT);  // Specify the LeftForward motor to be Output
   pinMode(LB, OUTPUT);  // Specify the LeftBackward motor to be Output
   pinMode(RF, OUTPUT);  // Specify the RightForward motor to be Output
   pinMode(RB, OUTPUT);  // Specify the RightBackward motor to be Output
+
   pinMode(gripperPin, OUTPUT);  // Specify the gripperpin to be Output
+  digitalWrite(gripperPin, LOW); //To open the Gripper
+  servo(gripOpen); //------------- Gripper is open
+
   pinMode(triggerPin, OUTPUT);  // Specify the triggerPin to be Output
   pinMode(echoPin, INPUT);  // Specify the echoPin to be Input
+
   pinMode(motorPulseLeft, INPUT); // Specify the motorPulseLeft to be Input
   pinMode(motorPulseRight,INPUT); // Specify the motorPulseRight to be Input
+
    for(int i = 0;i<=6;i++) 
   {
     pinMode(lineSensor[i], INPUT);
@@ -87,14 +114,23 @@ void setup() {
   testLights(); // Call the function to set the neopixel lights
 }
 
-//.............................LOOP FUNCTION...............................
+//=======================================================================//
+//.............................LOOP FUNCTION.............................//
+//=======================================================================//
 
 void loop() {
   defaultLineSensor();
   //distanceSensor();
+   servo(gripOpen);
+  delay(1000);
+  servo(gripClosed);
+  delay(1000);
+
 }
 
-//..............................Functions...................................
+//=======================================================================//
+//...............................FUNCTION................................//
+//=======================================================================//
 
 //  Function to set the color of a single neopixel
 void setPixelColor(int pixel, uint8_t red, uint8_t green, uint8_t blue) {
@@ -109,7 +145,10 @@ void testLights() {  // Set the color of the neopixels by pixel number and rgb v
   setPixelColor(2, 222, 222, 0); //right front
   setPixelColor(3, 222, 222, 0); //left front
 }
-//..............................MOTORS......................................
+
+//=======================================================================//
+//................................MOTORS.................................//
+//=======================================================================//
 
 void setMotors(int LFFwd, int LBBwd, int RFFwd, int RBBwd) {
   // Sets the speed of all the wheels by entering parameters
@@ -145,7 +184,9 @@ void driveStop() {
   setMotors(0, 0, 0, 0);
 }
 
-//................................LINE SENSOR...................................
+//=======================================================================//
+//................................LINE SENSOR............................//
+//=======================================================================//
 
 void defaultLineSensor() {
   // Read reflection sensor values
@@ -198,7 +239,9 @@ void defaultLineSensor() {
   } 
 }
 
-//................................ULTRASONIC SENSOR..................................
+//=======================================================================//
+//............................ULTRASONIC SENSOR..........................//
+//=======================================================================//
 
 void distanceSensor(){
 static unsigned long timer;
@@ -227,9 +270,9 @@ static unsigned long timer;
   }
 }
 
-//................................GRIPPER..................................
-
-
+//=======================================================================//
+//................................GRIPPER................................//
+//=======================================================================//
 
 void gripToggle(){
  static unsigned long timer;
@@ -260,6 +303,9 @@ void servo(int pulse) {
   }
 }
 
-//................................MILLIS...................................
+//=======================================================================//
+//................................MILLIS.................................//
+//=======================================================================//
+
 
 //TODO: AVOID OBSTACLES AND GRAB OBJECT FOR THE WHOLE WORKING TIME, FINISH/START PART
