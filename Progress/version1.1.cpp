@@ -161,25 +161,23 @@ void defaultLineSensor() {
  // Use thresholds to determine the behavior based on the maximum sensor value
   if (maxSensorValue >= 900) {
 
-    if (600 >= lineValues[4] >= 900 || lineValues[3] >= 900)
+    if (600 >= lineValues[3] >= 900 || lineValues[4] >= 900)
       driveForward(105+40, 123+40);
 
     else if (lineValues[0] >= 900 || lineValues[1] >= 900  || lineValues[2] >= 900 )
-      driveRight(105+65,123+65);
+      driveRight(105+50,123+50);
 
     else if (lineValues[5] >= 900 || lineValues[6] >= 900 || lineValues[7] >= 900)
-      driveLeft(105+65,123+65);
+      driveLeft(105+50,123+50);
   } 
   else if (maxSensorValue >= 700) {
-    if (lineValues[0] >= 700 || lineValues[7] >= 700)
+    if (lineValues[0] >= 700 || lineValues[1] >= 700 || lineValues[6] >= 700 || lineValues[7] >= 700)
       driveForward(105+40, 123+40);
-
-    else if (lineValues[3] >= 700 || lineValues[2] >= 700 ||  lineValues[1] >= 700)
-      driveRight(105+65,123+65);
-
-    else if (lineValues[4] >= 700 || lineValues[5] >= 700 || lineValues[6] >= 700)
-      driveLeft(105+65,123+65);
   } 
+   else
+  {
+    driveRight(105,123);
+  }
 }
 
 //................................ULTRASONIC SENSOR..................................
